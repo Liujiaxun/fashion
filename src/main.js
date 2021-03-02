@@ -40,6 +40,7 @@ import router from "./router";
 import store from "./store";
 
 import "vant/lib/index.css"; // 全局引入vant样式
+import "./global.scss";
 
 const app = createApp(App);
 
