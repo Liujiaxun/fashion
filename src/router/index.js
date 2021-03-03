@@ -9,6 +9,25 @@ const routes = [
       import(/* webpackChunkName: "about" */ "../views/Home/home.vue")
   },
   {
+    path: "/tweet",
+    name: "Tweet",
+    redirect: "/tweet/recommend",
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/Tweet/tweet.vue"),
+    children: [
+      {
+        path: "/tweet/recommend",
+        name: "TweetRecommend",
+        component: () => import("../views/Tweet/recommend")
+      },
+      {
+        path: "/tweet/attention",
+        name: "TweetAttention",
+        component: () => import("../views/Tweet/attention")
+      }
+    ]
+  },
+  {
     path: "/about",
     name: "About",
     // route level code-splitting

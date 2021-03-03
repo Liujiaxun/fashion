@@ -7,11 +7,11 @@
         :disabled="disabledRefresh"
         class="main"
       >
-        <p>刷新次数: {{ count }}</p>
+        <!-- <p>刷新次数: {{ count }}</p> -->
         <slot></slot>
       </van-pull-refresh>
     </div>
-    <div class="navBar">
+    <div class="navBar" v-if="showBar">
       <NavBar />
     </div>
   </div>
@@ -29,14 +29,15 @@ export default {
       loading: false,
       count: 0
     });
-    onMounted(() => {
-      console.log(1, props.showBar);
-    });
+    onMounted(() => {});
     const onRefreshFunc = () => {
       state.count++;
       ctx.emit("onRefresh", () => {
         state.loading = false;
       });
+      setTimeout(() => {
+        state.loading = false;
+      }, 2000);
     };
     return {
       ...toRefs(state),

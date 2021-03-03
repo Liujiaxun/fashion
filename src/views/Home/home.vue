@@ -1,5 +1,5 @@
 <template>
-  <Layout showBar="true" @onRefresh="onRefresh">
+  <Layout :showBar="true" @onRefresh="onRefresh" :disabledRefresh="true">
     <div>home</div>
   </Layout>
 </template>
