@@ -24,11 +24,13 @@
       </nav-bar>
     </div>
     <div class="tweetMain">
-      <transition :name="transition">
-        <keep-alive>
-          <router-view class="tweetView" />
-        </keep-alive>
-      </transition>
+      <router-view v-slot="{ Component }">
+        <!-- <keep-alive> -->
+        <transition :name="transition">
+          <component :is="Component" />
+        </transition>
+        <!-- </keep-alive> -->
+      </router-view>
     </div>
   </Layout>
 </template>

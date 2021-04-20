@@ -1,7 +1,7 @@
 <template>
   <div class="recommend">
     <div class="categroy" id="categroy">
-      <div class="all" :ref="ref => (allNav = ref)">
+      <div class="all" ref="allNav">
         <span
           @click="handleSelectNav(index)"
           :class="`item ${navIndex === index ? 'active' : ''}`"
@@ -13,50 +13,22 @@
     </div>
     <div class="recommendMain">
       <van-pull-refresh
-        v-model="loading"
+        v-model="refreshing"
         @refresh="onRefreshFunc"
-        class="recommendMain"
+        class="refresh"
       >
-        <div class="content">
+        <!-- <div class="content"> -->
+        <van-list
+          class="list"
+          v-model="loading"
+          :finished="finished"
+          finished-text="没有更多了"
+          @load="onLoad"
+        >
           <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>123</div>
-          <div>1232</div>
-        </div>
+        </van-list>
+        <!-- </div> -->
+
         <!-- <p>刷新次数: {{ count }}</p> -->
       </van-pull-refresh>
     </div>
@@ -72,12 +44,18 @@ import {
   onMounted,
   nextTick
 } from "vue";
+
+import BScroll from "better-scroll";
+
 export default {
   setup() {
-    const allNav = ref();
+    const allNav = ref(null);
+    const scroll = ref(null);
     const sreenWidth = window.innerWidth;
     const state = reactive({
+      refreshing: false,
       loading: false,
+      finished: false,
       navIndex: 0,
       navList: [
         { name: "全部" },
@@ -95,35 +73,46 @@ export default {
     });
     const onRefreshFunc = () => {
       setTimeout(() => {
-        state.loading = false;
+        state.refreshing = false;
       }, 1000);
     };
+    const onLoad = () => {};
+
     const handleSelectNav = index => {
       state.navIndex = index;
     };
 
     onMounted(() => {
-      nextTick(() => {
-        const categroyDom = document.getElementById("categroy");
-        categroyDom.addEventListener("scroll", function() {
-          allNav.value.style.transform = `translateX(0px)`;
-        });
+      scroll.value = new BScroll(".categroy", {
+        scrollX: true,
+        click: true
       });
     });
 
     watch(
       () => state.navIndex,
-      a => {
-        const itemNode = document.getElementsByClassName("item")[a];
+      index => {
+        const { maxScrollX, x: X } = scroll.value;
+        const itemNode = document.getElementsByClassName("item")[index];
         const offsetLeft = itemNode.offsetLeft;
         const m = sreenWidth / 2;
+        let x = 0;
         if (offsetLeft > m && allNav.value.offsetWidth - offsetLeft > m) {
-          allNav.value.style.transform = `translateX(-${offsetLeft -
-            m +
-            itemNode.offsetWidth / 2}px)`;
+          nextTick(() => {
+            x = -(offsetLeft - m + itemNode.offsetWidth / 2);
+          });
         } else {
-          allNav.value.style.transform = `translateX(0px)`;
+          if (maxScrollX === X) {
+            return;
+          }
+          if (Math.abs(maxScrollX) - Math.abs(X) < m) {
+            x = maxScrollX;
+          }
         }
+
+        nextTick(() => {
+          scroll.value.scrollTo(x);
+        });
       }
     );
 
@@ -135,7 +124,9 @@ export default {
       ...toRefs(state),
       onRefreshFunc,
       handleSelectNav,
-      allNav
+      onLoad,
+      allNav,
+      scroll
     };
   }
 };
@@ -145,12 +136,16 @@ export default {
   position: relative;
   padding-top: 30px;
   height: 100%;
+  overflow: hidden;
   .recommendMain {
     height: 100%;
-    .content {
+    .refresh {
       width: 100%;
       height: 100%;
-      overflow: hidden scroll;
+      .list {
+        height: 100%;
+        overflow-y: auto;
+      }
     }
   }
   .categroy {
@@ -161,18 +156,19 @@ export default {
     color: #666;
     display: flex;
     align-items: center;
-    overflow: scroll hidden;
+    // overflow: scroll hidden;
     .all {
       display: inline-block;
       width: auto;
       word-break: keep-all; /* 不换行 */
       white-space: nowrap; /* 不换行 */
-      padding-right: 30px;
+      // padding-right: 30px;
 
       .item {
         display: inline-block;
         margin: 0 8px;
         font-size: 14px;
+        transform: translateZ(0);
         &.active {
           color: #333;
           font-weight: 500;

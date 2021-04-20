@@ -1,13 +1,19 @@
 <template>
-  <div class="attention">
-    <refresh-load-more />
-  </div>
+  <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+    <van-list
+      v-model="loading"
+      :finished="finished"
+      finished-text="没有更多了"
+      @load="onLoad"
+    >
+      <van-cell v-for="item in list" :key="item" :title="item" />
+      <slot></slot>
+    </van-list>
+  </van-pull-refresh>
 </template>
 <script>
-import { reactive } from "vue";
-import RefreshLoadMore from "src/components/RefreshLoadMore/RefreshLoadMore.vue";
+import { reactive, toRefs } from "vue";
 export default {
-  components: { RefreshLoadMore },
   setup() {
     const state = reactive({
       list: [],
@@ -16,12 +22,15 @@ export default {
       refreshing: false
     });
     const onLoad = () => {
-      console.log(1, state.refreshing, state.loading);
-      if (state.refreshing || state.loading) {
-        console.log("正在请求，终止");
+      if (state.loading) {
+        console.log("正在请求");
         return;
       }
+      state.loading = true;
+
+      console.log("调用");
       setTimeout(() => {
+        console.log(state.refreshing);
         if (state.refreshing) {
           state.list = [];
           state.refreshing = false;
@@ -29,34 +38,25 @@ export default {
         if (state.list.length >= 40) {
           state.finished = true;
         } else {
-          for (let i = 0; i < 15; i++) {
+          for (let i = 0; i < 10; i++) {
             state.list.push(state.list.length + 1);
           }
         }
         state.loading = false;
-      }, 1000);
+      }, 3000);
     };
     const onRefresh = () => {
       // 清空列表数据
       state.finished = false;
-
       // 重新加载数据
       // 将 loading 设置为 true，表示处于加载状态
-      state.loading = true;
-      console.log("刷新");
       onLoad();
     };
     return {
-      ...state,
+      ...toRefs(state),
       onLoad,
       onRefresh
     };
   }
 };
 </script>
-<style lang="scss" scoped>
-.attention {
-  background: green;
-  min-height: 100%;
-}
-</style>
